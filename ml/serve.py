@@ -78,7 +78,7 @@ def _build_row(plaza: str, direction: str, vehicle: str, month: str) -> pd.DataF
             )
         return float(match["volume_total"].iloc[0])
 
-    return pd.DataFrame([{
+    row = pd.DataFrame([{
         "plaza_id":     plaza_id,
         "vehicle_id":   vehicle_id,
         "direction_id": direction_id,
@@ -87,6 +87,11 @@ def _build_row(plaza: str, direction: str, vehicle: str, month: str) -> pd.DataF
         "lag_1":  _vol_at(target - pd.DateOffset(months=1)),
         "lag_12": _vol_at(target - pd.DateOffset(months=12)),
     }])[FEATURE_COLS]
+    # `build_features` returns int32 for the categorical/calendar columns;
+    # the model's signature is strict, so the inference row has to match.
+    for col in ["plaza_id", "vehicle_id", "direction_id", "year", "month"]:
+        row[col] = row[col].astype("int32")
+    return row
 
 
 def main():

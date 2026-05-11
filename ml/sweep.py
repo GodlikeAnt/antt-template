@@ -42,6 +42,8 @@ def _prepare():
 def main():
     mlflow.set_experiment(EXPERIMENT_NAME)
     x_train, y_train, x_test, y_test = _prepare()
+    # MLflow infers the model signature from a small input example.
+    input_example = x_test.head(5)
 
     for i, params in enumerate(SWEEP_CONFIGS, start=1):
         run_name = f"config-{i}"
@@ -53,7 +55,9 @@ def main():
         #
         #     mlflow.log_params(params)
         #     mlflow.log_metrics({"mae": ..., "rmse": ..., "mean_volume": ...})
-        #     mlflow.sklearn.log_model(model, name="model")
+        #     mlflow.sklearn.log_model(
+        #         model, name="model", input_example=input_example,
+        #     )
         #
         # Open the run with `with mlflow.start_run(run_name=run_name):`.
         # ────────────────────────────────────────────────────────────────

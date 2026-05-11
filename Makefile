@@ -13,7 +13,8 @@ DBT_DIRS := --project-dir /opt/airflow/dbt_project --profiles-dir /opt/airflow/d
 PERMISSIONS_FIX := chmod -R a+rwX dbt_project 2>/dev/null || true
 
 .PHONY: up down build test reset logs shell-db shell-airflow dbt-deps \
-        mlflow train-once register sweep promote forecast ml-test
+        mlflow train-once register sweep promote forecast ml-test \
+        reset-mlflow
 
 up:
 	@$(PERMISSIONS_FIX)
@@ -90,3 +91,11 @@ forecast:
 # Run the ml/ test suite (unit tests + integration smoke tests).
 ml-test:
 	$(PYTEST_ML) ml/tests -v
+
+# Wipe MLflow state — runs, registered models, aliases, artifacts.
+# Useful when re-running the Day 2 lab from scratch.
+reset-mlflow:
+	$(COMPOSE) down mlflow
+	docker volume rm $$(basename "$$PWD" | tr '[:upper:]' '[:lower:]')_mlflow-data 2>/dev/null || true
+	$(COMPOSE) up -d mlflow
+	@echo "MLflow state reset."

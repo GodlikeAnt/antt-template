@@ -51,6 +51,23 @@ def _current_champion(client: MlflowClient):
     return client.get_run(mv.run_id)
 
 
+def _logged_model_uri(client: MlflowClient, run) -> str:
+    """Return the `models:/m-<id>` URI for the model logged inside `run`.
+
+    MLflow 3.x stores logged models as their own entities, separate from
+    run artifacts. Passing this URI to `register_model` avoids the
+    `runs:/{run_id}/model` fallback path (which prints a warning).
+    """
+    logged = client.search_logged_models(
+        experiment_ids=[run.info.experiment_id],
+        filter_string=f"source_run_id='{run.info.run_id}'",
+        max_results=1,
+    )
+    if not logged:
+        raise RuntimeError(f"No logged model for run {run.info.run_id}")
+    return f"models:/{logged[0].model_id}"
+
+
 def challenger_wins(challenger_mae: float, champion_mae: float) -> bool:
     """Return True if the challenger should replace the champion.
 
@@ -81,8 +98,10 @@ def main():
     print(f"Challenger MAE: {challenger_mae:.2f}")
 
     if challenger_wins(challenger_mae, champion_mae):
-        source = f"runs:/{challenger.info.run_id}/model"
-        mv = mlflow.register_model(source, REGISTERED_MODEL_NAME)
+        mv = mlflow.register_model(
+            _logged_model_uri(client, challenger),
+            REGISTERED_MODEL_NAME,
+        )
         client.set_registered_model_alias(
             name=REGISTERED_MODEL_NAME,
             alias=PRODUCTION_ALIAS,
