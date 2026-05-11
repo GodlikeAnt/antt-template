@@ -79,9 +79,7 @@ def challenger_wins(challenger_mae: float, champion_mae: float) -> bool:
     The metric here flips: *lower* MAE wins. Pick the right operator and
     return the result. Get this wrong and the gate is broken.
     """
-    raise NotImplementedError(
-        "Step 4 — fill in `challenger_wins` in ml/promote.py"
-    )
+    return challenger_mae < champion_mae
 
 
 def main():
