@@ -12,7 +12,8 @@ DBT_DIRS := --project-dir /opt/airflow/dbt_project --profiles-dir /opt/airflow/d
 # training environment running on a single laptop.
 PERMISSIONS_FIX := chmod -R a+rwX dbt_project 2>/dev/null || true
 
-.PHONY: up down build test reset logs shell-db shell-airflow dbt-deps
+.PHONY: up down build test reset logs shell-db shell-airflow dbt-deps \
+        mlflow train-once register sweep promote forecast ml-test
 
 up:
 	@$(PERMISSIONS_FIX)
@@ -52,3 +53,40 @@ shell-db:
 
 shell-airflow:
 	$(COMPOSE) exec airflow-scheduler bash
+
+# ─────────────────────────────────────────────────────────────────────────
+# Day 2 — ML lifecycle on the Gold layer
+# ─────────────────────────────────────────────────────────────────────────
+
+PYTHON_ML := $(COMPOSE) run --rm --entrypoint python --workdir /opt/airflow airflow-scheduler
+PYTEST_ML := $(COMPOSE) run --rm --entrypoint pytest --workdir /opt/airflow airflow-scheduler
+
+# Open the MLflow UI (informational — print the URL).
+mlflow:
+	@. ./.env 2>/dev/null; \
+		echo "MLflow UI: http://localhost:$${MLFLOW_HOST_PORT:-5000}"
+
+# Step 1 — track a single training run.
+train-once:
+	$(PYTHON_ML) -m ml.train
+
+# Step 2 — train, register, and assign the @production alias.
+register:
+	$(PYTHON_ML) -m ml.train --register
+
+# Step 3 — sweep six configurations into separate runs.
+sweep:
+	$(PYTHON_ML) -m ml.sweep
+
+# Step 4 — register the challenger if MAE beats the champion.
+promote:
+	$(PYTHON_ML) -m ml.promote
+
+# Step 5 — load by alias and forecast one (plaza, direction, vehicle, month).
+# Usage: make forecast PLAZA="..." DIR="..." VEH="..." MONTH="2020-01"
+forecast:
+	$(PYTHON_ML) -m ml.serve --plaza "$(PLAZA)" --direction "$(DIR)" --vehicle "$(VEH)" --month "$(MONTH)"
+
+# Run the ml/ test suite (unit tests + integration smoke tests).
+ml-test:
+	$(PYTEST_ML) ml/tests -v
