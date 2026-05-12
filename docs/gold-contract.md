@@ -8,7 +8,7 @@ relies on is documented here.
 ## Overview
 
 The Gold layer is a star schema over Brazilian highway toll-plaza traffic
-volumes published by ANTT, covering April 2010 through September 2019.
+volumes published by ANTT, covering January 2010 through December 2019.
 One fact table holds monthly volume counts; three dimensions describe
 the plaza, vehicle type, and month. It is consumed by the Day 2 forecast
 model and the Day 3 Power BI report. Refreshed monthly by the
@@ -67,7 +67,7 @@ demand via `make build`.
 
 - **Grain:** one row per month.
 - **Primary key:** `date_key`.
-- **Row count:** 120 (April 2010 through September 2019).
+- **Row count:** 120 (January 2010 through December 2019).
 
 #### Columns
 
