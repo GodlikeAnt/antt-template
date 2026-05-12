@@ -61,8 +61,8 @@ by `direction_id`).
 - Plaza/month combinations with under 12 months of history were dropped
   in the lag-feature step. Predictions for newly-opened plazas are not
   supported until they have one year of data.
-- The `month` and `year` features assume the dataset's calendar (Apr 2010
-  – Sep 2019). Predicting outside that range requires inputs whose
+- The `month` and `year` features assume the dataset's calendar (Jan 2010
+  – Dec 2019). Predicting outside that range requires inputs whose
   `lag_1` and `lag_12` are computable.
 - The `random_state=42` makes the run reproducible; if the Gold layer
   changes, retrain.

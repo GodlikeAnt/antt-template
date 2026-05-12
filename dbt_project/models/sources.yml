@@ -11,7 +11,7 @@ sources:
       - name: toll_traffic_raw
         description: >
           Monthly toll-plaza traffic counts published by ANTT, covering 20
-          concessionaires and 128 plazas between 2010-04 and 2019-09.
+          concessionaires and 128 plazas between 2010-01 and 2019-12.
         columns:
           - name: concessionaria
             description: Name of the highway concessionaire operating the plaza.
